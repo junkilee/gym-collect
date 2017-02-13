@@ -6,15 +6,17 @@ import os
 import tqdm
 
 def collect(env, steps, f, is_render=True):
-    for _ in tqdm.tqdm(range(steps)):
-      if is_render:
-        env.render()
-      action = env.action_space.sample()
-      new_observation, reward, done, _ = env.step(action)
-      f.write("{},{},{},{}\n".format(','.join(map(str,new_observation)), action, reward, done))
-      f.flush()
-      if done:
-        env.reset()
+  observation = env.reset()
+  for _ in tqdm.tqdm(range(steps)):
+    if is_render:
+      env.render()
+    action = env.action_space.sample()
+    new_observation, reward, done, _ = env.step(action)
+    f.write("{},{},{},{}\n".format(','.join(map(str,observation)), action, reward, done))
+    f.flush()
+    observation = new_observation
+    if done:
+      observation = env.reset()
 
 if __name__ == "__main__":
   data_dir = "data"
@@ -27,7 +29,6 @@ if __name__ == "__main__":
 
   env = gym.make('CartPole-v0')
   env.seed(int(time.time()))
-  env.reset()
 
   train_size = 500000
   test_size = 5000
