@@ -3,9 +3,10 @@ import sys
 import gym
 import time
 import os
+import tqdm
 
 def collect(env, steps, f, is_render=True):
-    for _ in range(steps):
+    for _ in tqdm.tqdm(range(steps)):
       if is_render:
         env.render()
       action = env.action_space.sample()
@@ -28,7 +29,7 @@ if __name__ == "__main__":
   env.seed(int(time.time()))
   env.reset()
 
-  train_size = 50000
+  train_size = 500000
   test_size = 5000
   with open(train_filename, 'w') as f:
     collect(env, train_size, f, is_display)

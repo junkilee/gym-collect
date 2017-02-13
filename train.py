@@ -9,6 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2, activity_l2
 import pandas as pd
+from tqdm import tqdm
 
 def get_transition_model():
   model = Sequential()
@@ -39,7 +40,7 @@ def get_reward_model():
 def read_data(filename, is_display = False):
   data = pd.read_csv(filename, header=None)
   data_list = []
-  for i in range(len(data)-1):
+  for i in tqdm(range(len(data)-1), desc="reading data"):
     row = data.iloc[i]
 
     # x, x_dot, theta, theta_dot
@@ -68,7 +69,7 @@ def read_data(filename, is_display = False):
   input_array = np.zeros([len(data_list), 5])
   output_array = np.zeros([len(data_list), 4])
 
-  for i in range(data_size):
+  for i in tqdm(range(data_size), desc="creating numpy array"):
     input_array[i][0:4] = data_list[i][0]
     input_array[i][4] = action_translation[data_list[i][2]]
     output_array[i][0:4] = data_list[i][1]
@@ -95,7 +96,7 @@ if __name__ == "__main__":
   test_filename = os.path.join(data_dir, 'test_' + postfix +'.csv')
 
   # default training parameters
-  epochs = 100
+  epochs = 10
   batch_size = 32
 
   # initialize numpy
@@ -108,7 +109,8 @@ if __name__ == "__main__":
   model = get_transition_model()
 
   model.fit(train_data[0], train_data[1], nb_epoch = epochs, batch_size = batch_size, validation_data=(test_data[0], test_data[1]))
-  #print(model.evaluate(test_data[0], test_data[1], batch_size = batch_size))
+  score = model.evaluate(test_data[0], test_data[1], batch_size = batch_size)
+  print ('\nscore = ', score)
 
 
 
