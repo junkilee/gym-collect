@@ -14,6 +14,7 @@ conda install -c conda-forge package-name
  - tensorflow 0.12.1
  - theano 0.8.2
  - tqdm 4.11.1
+
 Other dependent packages are automatically installed.
 
 ### From Pip
