@@ -38,14 +38,15 @@ def get_reward_model():
   return model
 
 def read_data(filename, is_display = False):
-  data = pd.read_csv(filename, header=None)
+  data = pd.read_csv(filename, header=None).as_matrix()
   data_list = []
   for i in tqdm(range(len(data)-1), desc="reading data"):
-    row = data.iloc[i]
+    row = data[i]
+    next_row = data[i+1]
 
     # x, x_dot, theta, theta_dot
-    state = row[0:4].as_matrix().astype(float)
-    next_state = data.iloc[i+1][0:4].as_matrix().astype(float)
+    state = row[0:4].astype(float)
+    next_state = next_row[0:4].astype(float)
     next_diff = next_state - state
 
     action = row[4]
