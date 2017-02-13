@@ -8,8 +8,9 @@ def collect(env, steps, f, is_render=True):
     for _ in range(steps):
       if is_render:
         env.render()
-      new_observation, reward, done, _ = env.step(env.action_space.sample())
-      f.write("{},{},{}\n".format(','.join(map(str,new_observation)), reward, done))
+      action = env.action_space.sample()
+      new_observation, reward, done, _ = env.step(action)
+      f.write("{},{},{},{}\n".format(','.join(map(str,new_observation)), action, reward, done))
       f.flush()
       if done:
         env.reset()
@@ -26,9 +27,12 @@ if __name__ == "__main__":
   env = gym.make('CartPole-v0')
   env.seed(int(time.time()))
   env.reset()
+
+  train_size = 50000
+  test_size = 5000
   with open(train_filename, 'w') as f:
-    collect(env, 5000, f, is_display)
+    collect(env, train_size, f, is_display)
   with open(test_filename, 'w') as f:
-    collect(env, 1000, f, is_display)
+    collect(env, test_size, f, is_display)
 
 
