@@ -95,6 +95,7 @@ if __name__ == "__main__":
   postfix = train_id
   train_filename = os.path.join(data_dir, 'train_' + postfix +'.csv')
   test_filename = os.path.join(data_dir, 'test_' + postfix +'.csv')
+  model_filename = os.path.join(data_dir, 'model_' + postfix + '.csv')
 
   # default training parameters
   epochs = 10
@@ -113,6 +114,13 @@ if __name__ == "__main__":
   score = model.evaluate(test_data[0], test_data[1], batch_size = batch_size)
   print ('\nscore = ', score)
 
+  # serialize model to JSON
+  model_json = model.to_json()
+  with open("model.json", "w") as json_file:
+    json_file.write(model_json)
+      # serialize weights to HDF5
+  model.save_weights("model.h5")
+  print("Saved model to disk")
 
 
 
