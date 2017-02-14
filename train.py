@@ -92,13 +92,15 @@ if __name__ == "__main__":
 
   # setting the directory and filename for train and test data files
   data_dir = "data"
+  model_dir = "model"
   postfix = train_id
   train_filename = os.path.join(data_dir, 'train_' + postfix +'.csv')
   test_filename = os.path.join(data_dir, 'test_' + postfix +'.csv')
-  model_filename = os.path.join(data_dir, 'model_' + postfix + '.csv')
+  model_filename = os.path.join(model_dir, 'model_' + postfix)
+  model_filename = os.path.join(model_dir, 'model_' + postfix)
 
   # default training parameters
-  epochs = 10
+  epochs = 2
   batch_size = 32
 
   # initialize numpy
@@ -116,13 +118,8 @@ if __name__ == "__main__":
 
   # serialize model to JSON
   model_json = model.to_json()
-  with open("model.json", "w") as json_file:
+  with open(model_filename + ".json", "w") as json_file:
     json_file.write(model_json)
-      # serialize weights to HDF5
-  model.save_weights("model.h5")
+  # serialize weights to HDF5
+  model.save_weights(model_filename + ".h5")
   print("Saved model to disk")
-
-
-
-
-
