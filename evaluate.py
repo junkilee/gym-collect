@@ -8,39 +8,14 @@ import gym
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import l2, activity_l2
+from keras.models import model_from_json
 import pandas as pd
 from tqdm import tqdm
-
-def get_transition_model():
-  model = Sequential()
-  # input (4 states + 1 action)
-
-  regularize = 0.00 
-  model.add(Dense(20, input_dim=5, init='uniform', activation='tanh', W_regularizer=l2(regularize)))
-  model.add(Dense(20, init='uniform', activation='tanh', W_regularizer=l2(regularize)))
-  model.add(Dense(20, init='uniform', activation='tanh', W_regularizer=l2(regularize)))
-  model.add(Dense(4, init='uniform', activation='linear'))
-  # output difference
-
-  model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy'])
-
-  return model
-
-def get_reward_model():
-  model = Sequential()
-  model.add(Dense(20, input_dim=5, init='uniform', activation='tanh'))
-  model.add(Dense(20, init='uniform', activation='tanh'))
-  model.add(Dense(20, init='uniform', activation='tanh'))
-  model.add(Dense(4, init='uniform', activation='linear'))
-
-  model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-
-  return model
 
 def read_data(filename, is_display = False):
   data = pd.read_csv(filename, header=None).as_matrix()
   data_list = []
-  for i in tqdm(range(len(data)-1), desc="reading data", ascii=True):
+  for i in tqdm(range(len(data)-1), desc="reading data"):
     row = data[i]
     next_row = data[i+1]
 
@@ -70,7 +45,7 @@ def read_data(filename, is_display = False):
   input_array = np.zeros([len(data_list), 5])
   output_array = np.zeros([len(data_list), 4])
 
-  for i in tqdm(range(data_size), desc="creating numpy array", ascii=True):
+  for i in tqdm(range(data_size), desc="creating numpy array"):
     input_array[i][0:4] = data_list[i][0]
     input_array[i][4] = action_translation[data_list[i][2]]
     output_array[i][0:4] = data_list[i][1]
@@ -103,27 +78,21 @@ if __name__ == "__main__":
   epochs = 2
   batch_size = 32
 
-  # initialize numpy
-  #seed = 7
-  #np.random.seed(seed)
-
-  train_data = read_data(train_filename)
   test_data = read_data(test_filename)
 
-  model = get_transition_model()
+  json_file = open(model_filename + '.json', 'r')
+  loaded_model_json = json_file.read()
+  json_file.close()
+  loaded_model = model_from_json(loaded_model_json)
+  # load weights into new model
+  loaded_model.load_weights(model_filename + ".h5")
+  print("Loaded model from disk")
 
-  start_time = time()
-  model.fit(train_data[0], train_data[1], nb_epoch = epochs, batch_size = batch_size, validation_data=(test_data[0], test_data[1]))
-  end_time = time()
-  print ('elasped time = {} secs'.format(end_time - start_time))
-  score = model.evaluate(test_data[0], test_data[1], batch_size = batch_size)
-  print('\n')
-  print ('score = ', score)
+  loaded_model.compile(loss='mse', optimizer='rmsprop', metrics=['accuracy'])
+  score = loaded_model.evaluate(test_data[0], test_data[1], verbose=0, batch_size = batch_size)
+  print "%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100)
 
-  # serialize model to JSON
-  model_json = model.to_json()
-  with open(model_filename + ".json", "w") as json_file:
-    json_file.write(model_json)
-  # serialize weights to HDF5
-  model.save_weights(model_filename + ".h5")
-  print("Saved model to disk")
+  print(loaded_model.predict(np.array([[0, 0, 0, 0, 1]])))
+  print(loaded_model.predict(np.array([[0, 0, 0, 0, -1]])))
+
+  
